@@ -1,0 +1,21 @@
+{
+  "object_kind": "pipeline",
+  "object_attributes": {
+    "id": 105,
+    "ref": "main",
+    "status": "canceled",
+    "url": "https://gitlab.example.com/pipe/105",
+    "duration": 12
+  },
+  "user": { "name": "Evgeniy", "username": "evgeniy" },
+  "merge_request": {
+    "title": "Fix bug",
+    "url": "https://gitlab.example.com/mr/1",
+    "target_branch": "develop"
+  },
+  "commit": {
+    "message": "fix: null check",
+    "url": "https://gitlab.example.com/commit/abc123"
+  },
+  "project": { "name": "test-project", "web_url": "https://gitlab.example.com/test" }
+}
