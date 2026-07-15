@@ -33,7 +33,15 @@ export function buildMessage(event: GitlabPipelineEvent): string | null {
 		user,
 		merge_request,
 		commit,
+		builds,
 	} = event
+
+	console.log(event)
+
+	const buildNames = builds.map((build) => build.name)
+	if (!buildNames.includes('bake-prod') || !buildNames.includes('deploy-prod')) {
+		return null
+	}
 
 	const label = STATUS_LABELS[pipeline.status]
 	if (!label) {

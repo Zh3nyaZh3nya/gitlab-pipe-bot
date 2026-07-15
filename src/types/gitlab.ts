@@ -31,6 +31,10 @@ export interface GitlabPipelineEvent {
 		name: string
 		web_url: string
 	}
+
+	builds: {
+		name: string
+	}[]
 }
 
 export function isPipelineEvent(body: unknown): body is GitlabPipelineEvent {
