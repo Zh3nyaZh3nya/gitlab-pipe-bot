@@ -17,5 +17,5 @@
     "message": "fix: null check",
     "url": "https://gitlab.example.com/commit/abc123"
   },
-  "project": { "name": "test-project", "web_url": "https://gitlab.example.com/test" }
+  "project": { "name": "test-project", "path_with_namespace": "group/test-project", "web_url": "https://gitlab.example.com/test" }
 }

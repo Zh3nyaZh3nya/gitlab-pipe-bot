@@ -1,21 +1,23 @@
 {
-  "name": "gitlab-tg-bot",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "fastify": "^5.2.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
-  }
+	"name": "gitlab-tg-bot",
+	"author": "Zh3nya!_",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+	"dev": "tsx watch src/index.ts",
+	"build": "tsc",
+	"start": "node dist/index.js",
+	"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"dotenv": "^16.4.5",
+		"fastify": "^5.2.0",
+		"pino": "^10.3.1"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.0",
+		"tsx": "^4.19.0",
+		"typescript": "^5.7.0"
+	}
 }
