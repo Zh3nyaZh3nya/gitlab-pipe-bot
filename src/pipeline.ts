@@ -2,7 +2,6 @@ import { logger } from './logger.js'
 import type { GitlabBuild, GitlabBuildStatus, GitlabPipelineEvent, GitlabPipelineStatus } from './types/gitlab.js'
 import type { NotifyChatConfig } from './types/notify-config.js'
 
-/** Настройки, нужные для сборки сообщения одному конкретному чату: общая ссылка на Jira + настройки этого чата */
 export type MessageConfig = NotifyChatConfig & { linkToJira: string | null }
 
 const STATUS_LABELS: Partial<Record<GitlabPipelineStatus, { smile: string, text: string }>> = {
@@ -55,7 +54,9 @@ function buildBranchLink(ref: string, linkToJira: string | null): string {
 const TARGET_STAGE_BUILD_NAME_PATTERN = /^(bake|deploy)-/i
 
 function hasReachedTargetStage(builds: GitlabBuild[]): boolean {
-	return builds.some((build) => TARGET_STAGE_BUILD_NAME_PATTERN.test(build.name) && build.status !== 'created')
+	return builds.some((build) =>
+		TARGET_STAGE_BUILD_NAME_PATTERN.test(build.name) && build.status !== 'created' && build.started_at !== null,
+	)
 }
 
 function passesTargetBuilds(buildNames: string[], targetBuilds: string | null): boolean {
