@@ -52,6 +52,12 @@ function buildBranchLink(ref: string, linkToJira: string | null): string {
 	return `<b><a href="${escapeHtml(url)}" rel="noreferrer noopener" target="_blank">${escapeHtml(ref)}</a></b>`
 }
 
+const TARGET_STAGE_BUILD_NAME_PATTERN = /^(bake|deploy)-/i
+
+function hasReachedTargetStage(builds: GitlabBuild[]): boolean {
+	return builds.some((build) => TARGET_STAGE_BUILD_NAME_PATTERN.test(build.name) && build.status !== 'created')
+}
+
 function passesTargetBuilds(buildNames: string[], targetBuilds: string | null): boolean {
 	if (!targetBuilds) {
 		return true
@@ -91,15 +97,24 @@ function findFirstBuildByStatus(builds: GitlabBuild[], status: GitlabBuildStatus
 	return builds.find((build) => build.status === status) ?? null
 }
 
-const INACTIVE_BUILD_STATUSES: GitlabBuildStatus[] = ['manual', 'created', 'skipped']
+/**
+ * Приоритет статусов джобы при выборе цели деплоя: то, что сейчас реально выполняется
+ * (running/pending), важнее уже завершенного (success/failed/canceled), а то, что еще
+ * не запускали (manual/created/skipped), — не показатель цели вообще.
+ */
+const BUILD_STATUS_PRIORITY: Record<GitlabBuildStatus, number> = {
+	running: 0,
+	pending: 1,
+	success: 2,
+	failed: 2,
+	canceled: 2,
+	manual: 3,
+	created: 3,
+	skipped: 3,
+}
 
 function findDeployTarget(builds: GitlabBuild[]): { tags: string[], target: string } | null {
-	const prioritized = [...builds].sort((a, b) => {
-		const aInactive = INACTIVE_BUILD_STATUSES.includes(a.status) ? 1 : 0
-		const bInactive = INACTIVE_BUILD_STATUSES.includes(b.status) ? 1 : 0
-
-		return aInactive - bInactive
-	})
+	const prioritized = [...builds].sort((a, b) => BUILD_STATUS_PRIORITY[a.status] - BUILD_STATUS_PRIORITY[b.status])
 
 	for (const build of prioritized) {
 		const name = build.name.toLowerCase()
@@ -141,6 +156,14 @@ export function buildMessage(event: GitlabPipelineEvent, config: MessageConfig):
 		logger.debug(
 			{ chatId: config.chat_id, buildNames, targetBuilds: config.targetBuilds },
 			'сообщение не собрано: buildNames не покрывают targetBuilds',
+		)
+		return null
+	}
+
+	if (pipeline.status !== 'failed' && !hasReachedTargetStage(builds)) {
+		logger.debug(
+			{ chatId: config.chat_id, buildNames, status: pipeline.status },
+			'сообщение не собрано: пайплайн еще не дошел до bake-.../deploy-... и не упал',
 		)
 		return null
 	}
