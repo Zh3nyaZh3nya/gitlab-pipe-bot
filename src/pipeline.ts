@@ -4,27 +4,18 @@ import type { NotifyChatConfig } from './types/notify-config.js'
 
 export type MessageConfig = NotifyChatConfig & { linkToJira: string | null }
 
-const STATUS_LABELS: Partial<Record<GitlabPipelineStatus, { smile: string, text: string }>> = {
-	created: {
-		smile: '🆕',
-		text: 'created'
-	},
-	running: {
-		smile: '🔄',
-		text: 'process'
-	},
-	success: {
-		smile: '✅',
-		text: 'success'
-	},
-	failed: {
-		smile: '‼️',
-		text: 'failed'
-	},
-	canceled: {
-		smile: '🔚',
-		text: 'canceled',
-	}
+const STATUS_LABELS: Record<GitlabPipelineStatus, { smile: string; text: string }> = {
+	created: { smile: '🆕', text: 'created' },
+	waiting_for_resource: { smile: '⏳', text: 'waiting for resource' },
+	preparing: { smile: '🛠', text: 'preparing' },
+	pending: { smile: '⌛', text: 'pending' },
+	running: { smile: '⚙️', text: 'running' },
+	success: { smile: '✅', text: 'success' },
+	failed: { smile: '‼️', text: 'failed' },
+	canceled: { smile: '🔚', text: 'canceled' },
+	skipped: { smile: '⏭', text: 'skipped' },
+	manual: { smile: '✋', text: 'manual' },
+	scheduled: { smile: '🕒', text: 'scheduled' },
 }
 
 function escapeHtml(text: string): string {
@@ -53,9 +44,11 @@ function buildBranchLink(ref: string, linkToJira: string | null): string {
 
 const TARGET_STAGE_BUILD_NAME_PATTERN = /^(bake|deploy)-/i
 
+const STARTED_BUILD_STATUSES = new Set<GitlabBuildStatus>(['running', 'success', 'failed', 'canceled'])
+
 function hasReachedTargetStage(builds: GitlabBuild[]): boolean {
 	return builds.some((build) =>
-		TARGET_STAGE_BUILD_NAME_PATTERN.test(build.name) && build.status !== 'created' && build.started_at !== null,
+		TARGET_STAGE_BUILD_NAME_PATTERN.test(build.name) && STARTED_BUILD_STATUSES.has(build.status),
 	)
 }
 
