@@ -91,8 +91,17 @@ function findFirstBuildByStatus(builds: GitlabBuild[], status: GitlabBuildStatus
 	return builds.find((build) => build.status === status) ?? null
 }
 
+const INACTIVE_BUILD_STATUSES: GitlabBuildStatus[] = ['manual', 'created', 'skipped']
+
 function findDeployTarget(builds: GitlabBuild[]): { tags: string[], target: string } | null {
-	for (const build of builds) {
+	const prioritized = [...builds].sort((a, b) => {
+		const aInactive = INACTIVE_BUILD_STATUSES.includes(a.status) ? 1 : 0
+		const bInactive = INACTIVE_BUILD_STATUSES.includes(b.status) ? 1 : 0
+
+		return aInactive - bInactive
+	})
+
+	for (const build of prioritized) {
 		const name = build.name.toLowerCase()
 
 		if (name.includes('prod')) {
@@ -102,8 +111,7 @@ function findDeployTarget(builds: GitlabBuild[]): { tags: string[], target: stri
 		const testMatch = name.match(/test(\d*)/)
 
 		if (testMatch) {
-			return { tags: ['#deploy_test'], target: `test${testMatch[1] }`
-		}
+			return { tags: ['#deploy_test'], target: `test${testMatch[1]}` }
 		}
 	}
 
