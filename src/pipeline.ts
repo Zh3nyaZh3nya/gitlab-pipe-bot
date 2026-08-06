@@ -29,15 +29,22 @@ function extractJiraProjectKey(linkToJira: string): string | null {
 	return linkToJira.match(/\/projects\/([^/]+)\//)?.[1] ?? null
 }
 
+function extractIssueKey(ref: string, projectKey: string): string | null {
+	const escapedProjectKey = projectKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+	return ref.match(new RegExp(`${escapedProjectKey}-\\d+`, 'i'))?.[0] ?? null
+}
+
 function buildBranchLink(ref: string, linkToJira: string | null): string {
 	const projectKey = linkToJira ? extractJiraProjectKey(linkToJira) : null
+	const issueKey = projectKey ? extractIssueKey(ref, projectKey) : null
 
-	if (!projectKey || !ref.includes(projectKey)) {
+	if (!issueKey) {
 		return escapeHtml(ref)
 	}
 
 	const separator = linkToJira!.includes('?') ? '&' : '?'
-	const url = `${linkToJira}${separator}selectedIssue=${encodeURIComponent(ref)}`
+	const url = `${linkToJira}${separator}selectedIssue=${encodeURIComponent(issueKey)}`
 
 	return `<b><a href="${escapeHtml(url)}" rel="noreferrer noopener" target="_blank">${escapeHtml(ref)}</a></b>`
 }
